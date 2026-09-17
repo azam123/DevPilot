@@ -1,23 +1,23 @@
 # DevPilot 🚀
 
-A clean ASP.NET Core .NET 8 developer productivity toolkit exposing practical utilities through documented REST APIs.
+DevPilot is a .NET 8 ASP.NET Core Web API that provides practical developer productivity utilities through focused, documented REST endpoints.
 
 ## Features
 
-- JSON formatting
+- JSON validation and formatting
 - Base64 encoding and decoding
 - SHA256 and SHA512 hashing
 - GUID generation
 - UTC timestamp generation
 - Swagger/OpenAPI documentation
-- Separate controllers following the Single Responsibility Principle
+- Separate controllers aligned with the Single Responsibility Principle
 
-## Tech Stack
+## Technology Stack
 
 - .NET 8
 - ASP.NET Core Web API
 - C#
-- Swagger / OpenAPI via Swashbuckle
+- Swashbuckle.AspNetCore
 
 ## Project Structure
 
@@ -30,14 +30,16 @@ DevPilot/
 │   └── UtilityController.cs
 ├── wwwroot/
 ├── DevPilot.csproj
-└── Program.cs
+├── Program.cs
+├── README.md
+└── LICENSE
 ```
 
 ## How to Use
 
 ### 1. Prerequisites
 
-Install the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+Install the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and Git.
 
 ### 2. Clone the repository
 
@@ -46,22 +48,40 @@ git clone https://github.com/azam123/DevPilot.git
 cd DevPilot
 ```
 
-### 3. Restore and run
+### 3. Restore dependencies and build
 
 ```bash
 dotnet restore
+dotnet build
+```
+
+### 4. Run the API
+
+```bash
 dotnet run
 ```
 
-### 4. Open Swagger
+Use the HTTP or HTTPS URL shown in the terminal.
 
-Open the Swagger URL shown in the terminal, usually:
+### 5. Open Swagger UI
+
+Navigate to:
 
 ```text
 https://localhost:xxxx/swagger
 ```
 
-Select an endpoint, click **Try it out**, provide the request body, and click **Execute**.
+In Swagger UI, expand an endpoint, click **Try it out**, enter the request body if required, and click **Execute**.
+
+## API Reference
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/json/format` | Validate and format JSON |
+| POST | `/api/base64` | Encode or decode Base64 |
+| POST | `/api/hash` | Generate SHA256 or SHA512 hash |
+| GET | `/api/utility/guid` | Generate a new GUID |
+| GET | `/api/utility/timestamp` | Get current UTC and Unix timestamp |
 
 ## API Examples
 
@@ -87,7 +107,7 @@ Select an endpoint, click **Try it out**, provide the request body, and click **
 {"value":"SGVsbG8gRGV2UGlsb3Q=","decode":true}
 ```
 
-### Generate Hash
+### Generate a SHA256 hash
 
 `POST /api/hash`
 
@@ -95,21 +115,25 @@ Select an endpoint, click **Try it out**, provide the request body, and click **
 {"value":"Hello DevPilot","algorithm":"SHA256"}
 ```
 
-### Generate GUID
+### Generate a GUID
 
 `GET /api/utility/guid`
 
-### Get UTC Timestamp
+### Get the current UTC timestamp
 
 `GET /api/utility/timestamp`
 
 ## Design Principles
 
-- Single Responsibility Principle
-- Clear API boundaries
-- Small, independently maintainable controllers
-- Swagger documentation for discoverability
-- Input validation and meaningful HTTP responses
+- Single Responsibility Principle: each controller owns one utility area.
+- Clear API boundaries and predictable routes.
+- Swagger annotations for endpoint discoverability.
+- Input validation and meaningful HTTP responses.
+- Small components that can be extended independently.
+
+## Notes
+
+The API currently does not require authentication. Avoid sending secrets or sensitive production data to test endpoints.
 
 ## License
 
