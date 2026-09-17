@@ -1,0 +1,11 @@
+using DevPilot.Services;using Microsoft.AspNetCore.Mvc;using Swashbuckle.AspNetCore.Annotations;
+namespace DevPilot.Api;
+public sealed record ConversionRequest(string Input,string Root="Root");
+[ApiController][Route("api/json-to-csharp")][SwaggerTag("JSON to C# model conversion")]
+public sealed class JsonToCSharpController(IModelConversionService service):ControllerBase{[HttpPost][SwaggerOperation(Summary="Convert nested JSON to C# models")][ProducesResponseType(typeof(object),200)][ProducesResponseType(typeof(object),400)]public IActionResult Convert(ConversionRequest r){try{return Ok(new{output=service.JsonToCSharp(r.Input,r.Root)});}catch(Exception e){return BadRequest(new{error=e.Message});}}}
+[ApiController][Route("api/xml-to-csharp")][SwaggerTag("XML to C# model conversion")]
+public sealed class XmlToCSharpController(IModelConversionService service):ControllerBase{[HttpPost][SwaggerOperation(Summary="Convert nested XML to C# models")][ProducesResponseType(typeof(object),200)][ProducesResponseType(typeof(object),400)]public IActionResult Convert(ConversionRequest r){try{return Ok(new{output=service.XmlToCSharp(r.Input,r.Root)});}catch(Exception e){return BadRequest(new{error=e.Message});}}}
+[ApiController][Route("api/csharp-to-json")][SwaggerTag("C# to JSON conversion")]
+public sealed class CSharpToJsonController(IModelConversionService service):ControllerBase{[HttpPost][SwaggerOperation(Summary="Convert C# property declarations to JSON template")][ProducesResponseType(typeof(object),200)][ProducesResponseType(typeof(object),400)]public IActionResult Convert(ConversionRequest r){try{return Ok(new{output=service.CSharpToJson(r.Input)});}catch(Exception e){return BadRequest(new{error=e.Message});}}}
+[ApiController][Route("api/csharp-to-xml")][SwaggerTag("C# to XML conversion")]
+public sealed class CSharpToXmlController(IModelConversionService service):ControllerBase{[HttpPost][SwaggerOperation(Summary="Convert C# property declarations to XML template")][ProducesResponseType(typeof(object),200)][ProducesResponseType(typeof(object),400)]public IActionResult Convert(ConversionRequest r){try{return Ok(new{output=service.CSharpToXml(r.Input,r.Root)});}catch(Exception e){return BadRequest(new{error=e.Message});}}}
