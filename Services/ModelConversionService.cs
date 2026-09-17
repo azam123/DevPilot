@@ -1,0 +1,15 @@
+using System.Text;using System.Text.Json;using System.Text.RegularExpressions;using System.Xml.Linq;
+namespace DevPilot.Services;
+public interface IModelConversionService{string JsonToCSharp(string input,string root);string XmlToCSharp(string input,string root);string CSharpToJson(string input);string CSharpToXml(string input,string root);}
+public sealed class ModelConversionService:IModelConversionService{
+ public string JsonToCSharp(string input,string root){using var doc=JsonDocument.Parse(input);var b=new StringBuilder();BuildJson(doc.RootElement,root,b,new HashSet<string>());return b.ToString();}
+ void BuildJson(JsonElement e,string name,StringBuilder b,HashSet<string>d){if(e.ValueKind!=JsonValueKind.Object||!d.Add(name))return;var ps=new List<(string n,string t)>();foreach(var p in e.EnumerateObject())ps.Add((Safe(p.Name),TypeFor(p.Value,Safe(p.Name),b,d)));b.AppendLine($"public sealed class {Safe(name)}");b.AppendLine("{");foreach(var p in ps)b.AppendLine($"    public {p.t} {p.n} {{ get; set; }}");b.AppendLine("}\n");}
+ string TypeFor(JsonElement e,string n,StringBuilder b,HashSet<string>d)=>e.ValueKind switch{JsonValueKind.String=>"string?",JsonValueKind.Number=>(e.TryGetInt64(out _)?"long":"double"),JsonValueKind.True or JsonValueKind.False=>"bool",JsonValueKind.Array=>e.GetArrayLength()==0?"List<object>":$"List<{TypeFor(e[0],n+"Item",b,d)}>",JsonValueKind.Object=>Obj(e,n,b,d),_=>"object?"};
+ string Obj(JsonElement e,string n,StringBuilder b,HashSet<string>d){var t=Safe(n);BuildJson(e,t,b,d);return t;}
+ public string XmlToCSharp(string input,string root){var b=new StringBuilder();BuildXml(XElement.Parse(input),root,b,new HashSet<string>());return b.ToString();}
+ void BuildXml(XElement x,string n,StringBuilder b,HashSet<string>d){if(!d.Add(n))return;var groups=x.Elements().GroupBy(e=>e.Name.LocalName).ToList();b.AppendLine($"public sealed class {Safe(n)}");b.AppendLine("{");foreach(var g in groups){var e=g.First();var t=e.HasElements?Safe(e.Name.LocalName):"string?";if(g.Count()>1)t=$"List<{t}>";if(e.HasElements)BuildXml(e,e.Name.LocalName,b,d);b.AppendLine($"    public {t} {Safe(g.Key)} {{ get; set; }}");}b.AppendLine("}\n");}
+ public string CSharpToJson(string input){var o=new Dictionary<string,object?>();foreach(Match m in Regex.Matches(input,@"(?:public|private|internal)\s+([\w<>?,\[\]]+)\s+(\w+)\s*\{\s*get;",RegexOptions.IgnoreCase))o[m.Groups[2].Value]=Default(m.Groups[1].Value);return JsonSerializer.Serialize(o,new JsonSerializerOptions{WriteIndented=true});}
+ public string CSharpToXml(string input,string root){using var d=JsonDocument.Parse(CSharpToJson(input));var x=new XElement(root);foreach(var p in d.RootElement.EnumerateObject())x.Add(new XElement(p.Name,p.Value.ToString()));return x.ToString();}
+ object? Default(string t)=>t.Contains("int")?0:t.Contains("bool")?false:t.StartsWith("List")?Array.Empty<object>():"";
+ static string Safe(string n){var s=Regex.Replace(n,"[^A-Za-z0-9_]","");if(string.IsNullOrWhiteSpace(s))s="Model";return char.ToUpperInvariant(s[0])+s[1..];}
+}
