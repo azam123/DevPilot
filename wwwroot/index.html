@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DevPilot</title><style>
+:root{font-family:Inter,system-ui;background:#101418;color:#e8eef2}body{margin:0}.app{max-width:1100px;margin:auto;padding:28px}.brand{font-size:28px;font-weight:800;color:#76ff03}.muted{color:#9aa7b2}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:25px}.card{background:#192027;border:1px solid #2d3942;border-radius:14px;padding:20px}textarea,input,select{box-sizing:border-box;width:100%;background:#0e1317;color:#e8eef2;border:1px solid #40505b;border-radius:8px;padding:11px;margin:8px 0;font:inherit}button{background:#76ff03;color:#081000;border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;margin:4px 3px 0 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0e1317;padding:12px;border-radius:8px;min-height:28px}.wide{grid-column:1/-1}</style></head><body><main class="app"><div class="brand">⚡ DevPilot</div><p class="muted">A fast, privacy-friendly developer toolbox powered by C# and ASP.NET Core.</p><div class="grid">
+<section class="card"><h2>JSON Formatter</h2><textarea id="json" rows="6" placeholder='{"name":"Azam","role":"Architect"}'></textarea><button onclick="formatJson()">Format JSON</button><button onclick="minifyJson()">Minify</button><pre id="jsonOut"></pre></section>
+<section class="card"><h2>Base64</h2><textarea id="b64" rows="4" placeholder="Enter text or Base64"></textarea><button onclick="base64(false)">Encode</button><button onclick="base64(true)">Decode</button><pre id="b64Out"></pre></section>
+<section class="card"><h2>Hash Generator</h2><input id="hashText" placeholder="Text to hash"><select id="algorithm"><option>SHA256</option><option>SHA512</option></select><button onclick="hash()">Generate Hash</button><pre id="hashOut"></pre></section>
+<section class="card"><h2>GUID Generator</h2><button onclick="guid()">Generate GUID</button><pre id="guidOut"></pre></section>
+<section class="card"><h2>UTC Timestamp</h2><button onclick="timestamp()">Get Current Timestamp</button><pre id="timeOut"></pre></section>
+<section class="card"><h2>Quick Notes</h2><textarea id="notes" rows="6" placeholder="Temporary notes..." oninput="localStorage.notes=this.value"></textarea><button onclick="document.getElementById('notes').value='';localStorage.notes=''">Clear</button></section>
+</div></main><script>
+const post=async(u,b)=>{let r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});let j=await r.json();return j.output||j.error};
+async function formatJson(){let r=await fetch('/api/json/format',{method:'POST',body:json.value});let j=await r.json();jsonOut.textContent=j.output||j.error}
+async function minifyJson(){try{jsonOut.textContent=JSON.stringify(JSON.parse(json.value))}catch(e){jsonOut.textContent=e.message}}
+async function base64(decode){b64Out.textContent=await post('/api/base64',{value:b64.value,decode})}
+async function hash(){hashOut.textContent=await post('/api/hash',{value:hashText.value,algorithm:algorithm.value})}
+async function guid(){guidOut.textContent=(await (await fetch('/api/guid')).json()).output}
+async function timestamp(){let j=await (await fetch('/api/timestamp')).json();timeOut.textContent=JSON.stringify(j,null,2)}
+notes.value=localStorage.notes||'';
+</script></body></html>
