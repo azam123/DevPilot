@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>DevPilot.Core</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Azam Shaikh</Authors>
+    <Description>Reusable developer productivity utilities from the DevPilot project.</Description>
+    <PackageTags>developer-tools;utilities;dotnet;json;base64;hashing</PackageTags>
+    <RepositoryUrl>https://github.com/azam123/DevPilot</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>
