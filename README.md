@@ -19,20 +19,28 @@ DevPilot is a modular **.NET 8 developer productivity toolkit** exposing practic
 - C# property declarations → JSON/XML templates
 - Separate controllers based on single responsibility
 - Swagger/OpenAPI documentation
+- Request validation with clear 400 responses
+- Global `ProblemDetails` error handling for unexpected failures
+- Health endpoint for deployment and monitoring checks
+- Runnable REST request examples
 - Reusable `DevPilot.Core` library
 
 ## 🏗️ Architecture
 
 ```mermaid
 flowchart TD
-    U[User / Client] --> API[ASP.NET Core API]
+    U[Developer / Client] --> API[ASP.NET Core API]
     API --> C[Focused Controllers]
-    C --> S[Application Services]
+    C --> V[Input Validation]
+    V --> S[Application Services]
     S --> CORE[DevPilot.Core Utilities]
     S --> CONV[Model Conversion Service]
-    CORE --> OUT[Validated Response]
-    CONV --> OUT
+    API --> EH[Global Exception Handler]
+    EH --> PD[ProblemDetails]
+    S --> OUT[Validated Response]
 ```
+
+See the detailed diagrams in [`docs/architecture.md`](docs/architecture.md).
 
 ## ⚡ Quick Start — Web API
 
@@ -60,45 +68,40 @@ https://localhost:<port>/swagger
 
 In Swagger, select an endpoint → **Try it out** → provide input → **Execute**.
 
-## 📦 NuGet Package
+### Health check
 
-The reusable library project is located at `src/DevPilot.Core`.
-
-### Build the package locally
+After starting the API, call:
 
 ```bash
-dotnet restore src/DevPilot.Core/DevPilot.Core.csproj
-dotnet build src/DevPilot.Core/DevPilot.Core.csproj -c Release
-dotnet pack src/DevPilot.Core/DevPilot.Core.csproj -c Release -o ./artifacts
+curl -k https://localhost:<port>/api/health
 ```
 
-### Use the package in another .NET project
+Expected response shape:
 
-```bash
-dotnet add package DevPilot.Core --version 0.1.0
+```json
+{
+  "status": "healthy",
+  "service": "DevPilot",
+  "utc": "2026-09-19T00:00:00+00:00"
+}
 ```
 
-Example:
+### REST examples
 
-```csharp
-using DevPilot.Core;
+Runnable examples are available in [`Examples/DevPilot.http`](Examples/DevPilot.http). They cover health checks, JSON-to-C# conversion, invalid-input handling, and JSON formatting.
 
-var encoded = DeveloperUtilities.ToBase64("Hello DevPilot");
-var hash = DeveloperUtilities.Sha256("Hello DevPilot");
-Console.WriteLine(encoded);
-Console.WriteLine(hash);
-```
+## 🛡️ Validation & Error Handling
 
-### Publishing
+Model-conversion inputs are validated before parsing or code generation:
 
-The workflow `.github/workflows/nuget-publish.yml` builds the package and publishes it to NuGet.org when a version tag is pushed. Configure the repository secret `NUGET_API_KEY` before publishing.
+- Input is required and limited to 1 MB.
+- Root type is required and limited to 100 characters.
+- Root names must be valid C#-style identifiers.
+- Invalid arguments return HTTP 400.
+- Unexpected exceptions are logged server-side and returned as `ProblemDetails`.
+- Production responses avoid leaking internal exception details.
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-> Package publication requires a valid NuGet.org account, API key, and successful GitHub Actions execution. A workflow configuration alone does not mean the package has already been published.
+This keeps the API predictable for clients while avoiding unnecessary parsing work for invalid requests.
 
 ## 🔌 API Reference
 
@@ -113,6 +116,7 @@ git push origin v0.1.0
 
 | Method | Endpoint | Purpose |
 |---|---|---|
+| GET | `/api/health` | Lightweight health/status check |
 | POST | `/api/json-to-csharp` | Generate nested C# models from JSON |
 | POST | `/api/xml-to-csharp` | Generate C# models from XML |
 | POST | `/api/csharp-to-json` | Generate a JSON template from C# properties |
@@ -128,7 +132,10 @@ git push origin v0.1.0
 ```text
 DevPilot/
 ├── Api/                       # Focused API controllers
-├── Services/                  # Application services
+├── Services/                  # Application services + validation
+├── Infrastructure/            # Global error handling
+├── Examples/                  # Runnable HTTP examples
+├── docs/                      # Architecture + Mermaid diagrams
 ├── src/
 │   └── DevPilot.Core/         # Reusable NuGet library
 │       ├── DevPilot.Core.csproj
@@ -139,6 +146,26 @@ DevPilot/
 └── README.md
 ```
 
+## 📦 NuGet Package
+
+The reusable library project is located at `src/DevPilot.Core`.
+
+### Build the package locally
+
+```bash
+dotnet restore src/DevPilot.Core/DevPilot.Core.csproj
+dotnet build src/DevPilot.Core/DevPilot.Core.csproj -c Release
+dotnet pack src/DevPilot.Core/DevPilot.Core.csproj -c Release -o ./artifacts
+```
+
+### Use the package
+
+```bash
+dotnet add package DevPilot.Core --version 0.1.0
+```
+
+> The repository contains NuGet packaging/publishing configuration, but this documentation does **not** claim that a package was published. Publication should only be considered successful after a NuGet/GitHub Actions push has completed successfully.
+
 ## 🧪 Development
 
 ```bash
@@ -147,15 +174,15 @@ dotnet build
 dotnet test
 ```
 
-Add tests for new utilities and endpoints before merging. Prefer small services, explicit contracts, cancellation support, input validation, and predictable error responses.
+Use the HTTP examples for quick manual verification. For production contributions, add unit/integration tests for new behavior before merging.
 
 ## 🗺️ Improvement Roadmap
 
-- [ ] Add automated unit and integration tests
-- [ ] Add global exception handling and ProblemDetails
-- [ ] Add request size limits and rate limiting
+- [ ] Add automated unit and integration test projects
+- [x] Add global exception handling and ProblemDetails
+- [ ] Add request rate limiting
 - [ ] Add Roslyn-based C# parsing for safer model conversion
-- [ ] Add structured logging and health checks
+- [ ] Add structured logging and deeper health checks
 - [ ] Expand reusable NuGet APIs
 - [ ] Add versioned API documentation
 
