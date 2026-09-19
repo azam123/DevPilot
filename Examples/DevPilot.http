@@ -1,0 +1,29 @@
+@DevPilot_Host = https://localhost:5001
+
+### Health check
+GET {{DevPilot_Host}}/api/health
+Accept: application/json
+
+### JSON to C#
+POST {{DevPilot_Host}}/api/json-to-csharp
+Content-Type: application/json
+
+{
+  "input": "{\"customer\":{\"id\":123,\"name\":\"Azam\"}}",
+  "root": "CustomerResponse"
+}
+
+### Invalid request example
+POST {{DevPilot_Host}}/api/json-to-csharp
+Content-Type: application/json
+
+{
+  "input": "",
+  "root": "CustomerResponse"
+}
+
+### JSON formatting
+POST {{DevPilot_Host}}/api/json/format
+Content-Type: application/json
+
+{"name":"DevPilot","enabled":true}
