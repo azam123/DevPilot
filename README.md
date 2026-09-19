@@ -68,6 +68,8 @@ https://localhost:<port>/swagger
 
 In Swagger, select an endpoint → **Try it out** → provide input → **Execute**.
 
+> 🎨 **Colorful animated-style setup guide:** See [`docs/installation-and-setup.md`](docs/installation-and-setup.md) for a step-by-step guide with colorful markers, command highlighting, expandable troubleshooting sections, and a Mermaid setup flow.
+
 ### Health check
 
 After starting the API, call:
@@ -135,7 +137,7 @@ DevPilot/
 ├── Services/                  # Application services + validation
 ├── Infrastructure/            # Global error handling
 ├── Examples/                  # Runnable HTTP examples
-├── docs/                      # Architecture + Mermaid diagrams
+├── docs/                      # Architecture + installation guides
 ├── src/
 │   └── DevPilot.Core/         # Reusable NuGet library
 │       ├── DevPilot.Core.csproj
