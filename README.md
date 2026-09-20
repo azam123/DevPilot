@@ -4,7 +4,6 @@
 [![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-Minimal%20APIs-512BD4)](https://learn.microsoft.com/aspnet/core/)
 [![NuGet](https://img.shields.io/badge/NuGet-DevPilot.Core-004880?logo=nuget)](https://www.nuget.org/)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue)](LICENSE)
-[![Build](https://img.shields.io/badge/Build-.NET%208-success)](#development)
 
 DevPilot is a modular **.NET 8 developer productivity toolkit** exposing practical utilities through documented REST APIs, with reusable functionality available through the `DevPilot.Core` NuGet package.
 
@@ -13,17 +12,19 @@ DevPilot is a modular **.NET 8 developer productivity toolkit** exposing practic
 - JSON validation and formatting
 - Base64 encoding and decoding
 - SHA256 and SHA512 hashing
+- **URL component encoding and decoding**
 - GUID and UTC timestamp generation
 - Recursive JSON → C# model generation
 - Recursive XML → C# model generation
 - C# property declarations → JSON/XML templates
-- Separate controllers based on single responsibility
+- Focused controllers based on single responsibility
 - Swagger/OpenAPI documentation
 - Request validation with clear 400 responses
 - Global `ProblemDetails` error handling for unexpected failures
 - Health endpoint for deployment and monitoring checks
 - Runnable REST request examples
 - Reusable `DevPilot.Core` library
+- Automated build, test, and NuGet package validation in GitHub Actions
 
 ## 🏗️ Architecture
 
@@ -40,7 +41,7 @@ flowchart TD
     S --> OUT[Validated Response]
 ```
 
-See the detailed diagrams in [`docs/architecture.md`](docs/architecture.md).
+See [`docs/architecture.md`](docs/architecture.md) for request sequence diagrams and design principles.
 
 ## ⚡ Quick Start — Web API
 
@@ -68,37 +69,39 @@ https://localhost:<port>/swagger
 
 In Swagger, select an endpoint → **Try it out** → provide input → **Execute**.
 
-> 🎨 **Colorful animated-style setup guide:** See [`docs/installation-and-setup.md`](docs/installation-and-setup.md) for a step-by-step guide with colorful markers, command highlighting, expandable troubleshooting sections, and a Mermaid setup flow.
-
 ### Health check
-
-After starting the API, call:
 
 ```bash
 curl -k https://localhost:<port>/api/health
 ```
 
-Expected response shape:
+### URL encoding example
+
+```bash
+curl -k https://localhost:<port>/api/encoding/url/encode \
+  -H "Content-Type: application/json" \
+  -d '{"value":"name=Azam & role=Principal Engineer"}'
+```
+
+Example response:
 
 ```json
 {
-  "status": "healthy",
-  "service": "DevPilot",
-  "utc": "2026-09-19T00:00:00+00:00"
+  "value": "name%3DAzam%20%26%20role%3DPrincipal%20Engineer"
 }
 ```
 
 ### REST examples
 
-Runnable examples are available in [`Examples/DevPilot.http`](Examples/DevPilot.http). They cover health checks, JSON-to-C# conversion, invalid-input handling, and JSON formatting.
+Runnable examples are available in [`Examples/DevPilot.http`](Examples/DevPilot.http). They cover health checks, model conversion, invalid-input handling, JSON formatting, and URL encoding/decoding.
 
 ## 🛡️ Validation & Error Handling
 
-Model-conversion inputs are validated before parsing or code generation:
+Model-conversion inputs are validated before parsing or code generation. The API also validates required values for the encoding endpoints.
 
-- Input is required and limited to 1 MB.
-- Root type is required and limited to 100 characters.
-- Root names must be valid C#-style identifiers.
+- Required values are checked before processing.
+- Model-conversion input is limited to 1 MB.
+- Root type is limited to 100 characters and validated as a C# identifier.
 - Invalid arguments return HTTP 400.
 - Unexpected exceptions are logged server-side and returned as `ProblemDetails`.
 - Production responses avoid leaking internal exception details.
@@ -106,15 +109,6 @@ Model-conversion inputs are validated before parsing or code generation:
 This keeps the API predictable for clients while avoiding unnecessary parsing work for invalid requests.
 
 ## 🔌 API Reference
-
-### Model conversion request
-
-```json
-{
-  "input": "{\"customer\":{\"name\":\"Azam\"}}",
-  "root": "CustomerResponse"
-}
-```
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -126,6 +120,8 @@ This keeps the API predictable for clients while avoiding unnecessary parsing wo
 | POST | `/api/json/format` | Validate and format JSON |
 | POST | `/api/base64` | Encode or decode Base64 |
 | POST | `/api/hash` | Generate SHA256 or SHA512 |
+| POST | `/api/encoding/url/encode` | URL-component encode text |
+| POST | `/api/encoding/url/decode` | URL-component decode text |
 | GET | `/api/utility/guid` | Generate a GUID |
 | GET | `/api/utility/timestamp` | Get UTC and Unix timestamps |
 
@@ -137,15 +133,18 @@ DevPilot/
 ├── Services/                  # Application services + validation
 ├── Infrastructure/            # Global error handling
 ├── Examples/                  # Runnable HTTP examples
-├── docs/                      # Architecture + installation guides
+├── docs/                      # Architecture + setup guides
 ├── src/
 │   └── DevPilot.Core/         # Reusable NuGet library
 │       ├── DevPilot.Core.csproj
-│       └── DeveloperUtilities.cs
+│       ├── DeveloperUtilities.cs
+│       └── EncodingUtilities.cs
+├── tests/
+│   └── DevPilot.Core.Tests/   # xUnit tests for reusable utilities
+├── .github/workflows/         # CI build/test/package workflow
 ├── wwwroot/                   # Frontend assets
 ├── DevPilot.csproj            # Web API project
-├── Program.cs
-└── README.md
+└── Program.cs
 ```
 
 ## 📦 NuGet Package
@@ -160,28 +159,28 @@ dotnet build src/DevPilot.Core/DevPilot.Core.csproj -c Release
 dotnet pack src/DevPilot.Core/DevPilot.Core.csproj -c Release -o ./artifacts
 ```
 
-### Use the package
+The current project version is **0.2.0**.
+
+> The repository contains NuGet packaging configuration and CI package validation, but this README does **not** claim that a package was published. Publication should only be considered successful after a NuGet/GitHub Actions push has completed successfully.
+
+## 🧪 Development & Testing
 
 ```bash
-dotnet add package DevPilot.Core --version 0.1.0
+dotnet restore
+dotnet build --configuration Release
+dotnet test --configuration Release
 ```
 
-> The repository contains NuGet packaging/publishing configuration, but this documentation does **not** claim that a package was published. Publication should only be considered successful after a NuGet/GitHub Actions push has completed successfully.
+The test project covers Base64 UTF-8 round trips, deterministic SHA256 hashing, URL encoding round trips, and null-input validation.
 
-## 🧪 Development
-
-```bash
-dotnet format
-dotnet build
-dotnet test
-```
-
-Use the HTTP examples for quick manual verification. For production contributions, add unit/integration tests for new behavior before merging.
+GitHub Actions runs restore, build, test, and `dotnet pack` for the reusable package on pushes and pull requests targeting `main`.
 
 ## 🗺️ Improvement Roadmap
 
-- [ ] Add automated unit and integration test projects
+- [x] Add automated core unit tests
 - [x] Add global exception handling and ProblemDetails
+- [x] Add URL encoding/decoding utility
+- [x] Add CI build/test/package validation
 - [ ] Add request rate limiting
 - [ ] Add Roslyn-based C# parsing for safer model conversion
 - [ ] Add structured logging and deeper health checks
