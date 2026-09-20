@@ -27,3 +27,19 @@ POST {{DevPilot_Host}}/api/json/format
 Content-Type: application/json
 
 {"name":"DevPilot","enabled":true}
+
+### URL encode
+POST {{DevPilot_Host}}/api/encoding/url/encode
+Content-Type: application/json
+
+{
+  "value": "name=Azam & role=Principal Engineer"
+}
+
+### URL decode
+POST {{DevPilot_Host}}/api/encoding/url/decode
+Content-Type: application/json
+
+{
+  "value": "name%3DAzam%20%26%20role%3DPrincipal%20Engineer"
+}
