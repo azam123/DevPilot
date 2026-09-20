@@ -56,9 +56,9 @@ See [`docs/architecture.md`](docs/architecture.md) for request sequence diagrams
 ```bash
 git clone https://github.com/azam123/DevPilot.git
 cd DevPilot
-dotnet restore
-dotnet build
-dotnet run
+dotnet restore DevPilot.csproj
+dotnet build DevPilot.csproj
+dotnet run --project DevPilot.csproj
 ```
 
 Open the Swagger UI address printed in the terminal, typically:
@@ -166,9 +166,10 @@ The current project version is **0.2.0**.
 ## 🧪 Development & Testing
 
 ```bash
-dotnet restore
-dotnet build --configuration Release
-dotnet test --configuration Release
+dotnet restore DevPilot.csproj
+dotnet build DevPilot.csproj --configuration Release
+dotnet restore tests/DevPilot.Core.Tests/DevPilot.Core.Tests.csproj
+dotnet test tests/DevPilot.Core.Tests/DevPilot.Core.Tests.csproj --configuration Release
 ```
 
 The test project covers Base64 UTF-8 round trips, deterministic SHA256 hashing, URL encoding round trips, and null-input validation.
