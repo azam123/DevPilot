@@ -19,14 +19,20 @@ jobs:
         with:
           dotnet-version: 8.x
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore API
+        run: dotnet restore DevPilot.csproj
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+      - name: Restore tests
+        run: dotnet restore tests/DevPilot.Core.Tests/DevPilot.Core.Tests.csproj
+
+      - name: Build API
+        run: dotnet build DevPilot.csproj --no-restore --configuration Release
+
+      - name: Build tests
+        run: dotnet build tests/DevPilot.Core.Tests/DevPilot.Core.Tests.csproj --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test --no-build --configuration Release
+        run: dotnet test tests/DevPilot.Core.Tests/DevPilot.Core.Tests.csproj --no-build --configuration Release
 
       - name: Pack DevPilot.Core
-        run: dotnet pack src/DevPilot.Core/DevPilot.Core.csproj --no-build --configuration Release --output ./artifacts
+        run: dotnet pack src/DevPilot.Core/DevPilot.Core.csproj --configuration Release --output ./artifacts
