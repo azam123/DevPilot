@@ -174,7 +174,7 @@ dotnet build src/DevPilot.Core/DevPilot.Core.csproj -c Release
 dotnet pack src/DevPilot.Core/DevPilot.Core.csproj -c Release -o ./artifacts
 ```
 
-The current project version is **0.2.0**.
+The current project version is **0.3.0**.
 
 > The repository contains NuGet packaging configuration and CI package validation, but this README does **not** claim that a package was published. Publication should only be considered successful after a NuGet/GitHub Actions push has completed successfully.
 
