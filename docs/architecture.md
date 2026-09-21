@@ -36,6 +36,29 @@ sequenceDiagram
     end
 ```
 
+## URL validation flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant A as UrlValidationController
+    participant U as UriUtilities
+
+    C->>A: POST /api/validation/url
+    A->>A: Check required value + 2048-char limit
+    alt Invalid HTTP URL
+        A->>U: TryParseHttpUrl(value)
+        U-->>A: false
+        A-->>C: 400 Bad Request
+    else Valid HTTP/HTTPS URL
+        A->>U: TryParseHttpUrl(value)
+        U-->>A: Uri
+        A-->>C: 200 URL components
+    end
+```
+
+> The validation endpoint only parses the supplied URL. It does **not** make an outbound network request.
+
 ## Conversion request flow
 
 ```mermaid
@@ -62,6 +85,7 @@ sequenceDiagram
 - Keep controllers thin and focused on HTTP concerns.
 - Keep reusable, dependency-free behavior in `DevPilot.Core`.
 - Validate untrusted input before expensive parsing.
+- Put hard limits on user-controlled payloads.
 - Return predictable HTTP errors.
 - Never expose internal exception details in production.
 - Keep examples runnable with the REST Client extension or similar HTTP tooling.
