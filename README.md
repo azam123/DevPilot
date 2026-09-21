@@ -12,7 +12,8 @@ DevPilot is a modular **.NET 8 developer productivity toolkit** exposing practic
 - JSON validation and formatting
 - Base64 encoding and decoding
 - SHA256 and SHA512 hashing
-- **URL component encoding and decoding**
+- URL component encoding and decoding
+- **HTTP/HTTPS URL validation and inspection** without making network calls
 - GUID and UTC timestamp generation
 - Recursive JSON → C# model generation
 - Recursive XML → C# model generation
@@ -41,7 +42,7 @@ flowchart TD
     S --> OUT[Validated Response]
 ```
 
-See [`docs/architecture.md`](docs/architecture.md) for request sequence diagrams and design principles.
+See [`docs/architecture.md`](docs/architecture.md) for request sequence diagrams, URL validation flow, and design principles.
 
 ## ⚡ Quick Start — Web API
 
@@ -91,22 +92,34 @@ Example response:
 }
 ```
 
+### URL validation example
+
+```bash
+curl -k https://localhost:<port>/api/validation/url \
+  -H "Content-Type: application/json" \
+  -d '{"value":"https://example.com/products?page=2"}'
+```
+
+The endpoint validates that the input is an **absolute HTTP/HTTPS URL** and returns parsed components such as scheme, host, port, path, query presence, and fragment presence. It never performs an outbound request.
+
 ### REST examples
 
-Runnable examples are available in [`Examples/DevPilot.http`](Examples/DevPilot.http). They cover health checks, model conversion, invalid-input handling, JSON formatting, and URL encoding/decoding.
+Runnable examples are available in [`Examples/DevPilot.http`](Examples/DevPilot.http). They cover health checks, model conversion, invalid-input handling, JSON formatting, URL encoding/decoding, and URL validation.
 
 ## 🛡️ Validation & Error Handling
 
-Model-conversion inputs are validated before parsing or code generation. The API also validates required values for the encoding endpoints.
+Model-conversion inputs are validated before parsing or code generation. Encoding and URL-validation endpoints also reject missing or oversized values before processing.
 
 - Required values are checked before processing.
 - Model-conversion input is limited to 1 MB.
+- URL validation input is limited to 2048 characters.
+- URL validation accepts only absolute `http` and `https` URLs.
 - Root type is limited to 100 characters and validated as a C# identifier.
 - Invalid arguments return HTTP 400.
 - Unexpected exceptions are logged server-side and returned as `ProblemDetails`.
 - Production responses avoid leaking internal exception details.
 
-This keeps the API predictable for clients while avoiding unnecessary parsing work for invalid requests.
+This keeps the API predictable for clients while avoiding unnecessary parsing or network work for invalid requests.
 
 ## 🔌 API Reference
 
@@ -122,6 +135,7 @@ This keeps the API predictable for clients while avoiding unnecessary parsing wo
 | POST | `/api/hash` | Generate SHA256 or SHA512 |
 | POST | `/api/encoding/url/encode` | URL-component encode text |
 | POST | `/api/encoding/url/decode` | URL-component decode text |
+| POST | `/api/validation/url` | Validate and inspect an HTTP/HTTPS URL |
 | GET | `/api/utility/guid` | Generate a GUID |
 | GET | `/api/utility/timestamp` | Get UTC and Unix timestamps |
 
@@ -138,7 +152,8 @@ DevPilot/
 │   └── DevPilot.Core/         # Reusable NuGet library
 │       ├── DevPilot.Core.csproj
 │       ├── DeveloperUtilities.cs
-│       └── EncodingUtilities.cs
+│       ├── EncodingUtilities.cs
+│       └── UriUtilities.cs
 ├── tests/
 │   └── DevPilot.Core.Tests/   # xUnit tests for reusable utilities
 ├── .github/workflows/         # CI build/test/package workflow
@@ -172,7 +187,7 @@ dotnet restore tests/DevPilot.Core.Tests/DevPilot.Core.Tests.csproj
 dotnet test tests/DevPilot.Core.Tests/DevPilot.Core.Tests.csproj --configuration Release
 ```
 
-The test project covers Base64 UTF-8 round trips, deterministic SHA256 hashing, URL encoding round trips, and null-input validation.
+The test project covers Base64 UTF-8 round trips, deterministic SHA256 hashing, URL encoding round trips, null-input validation, and HTTP/HTTPS URL validation/normalization.
 
 GitHub Actions runs restore, build, test, and `dotnet pack` for the reusable package on pushes and pull requests targeting `main`.
 
@@ -181,6 +196,7 @@ GitHub Actions runs restore, build, test, and `dotnet pack` for the reusable pac
 - [x] Add automated core unit tests
 - [x] Add global exception handling and ProblemDetails
 - [x] Add URL encoding/decoding utility
+- [x] Add HTTP/HTTPS URL validation utility
 - [x] Add CI build/test/package validation
 - [ ] Add request rate limiting
 - [ ] Add Roslyn-based C# parsing for safer model conversion
