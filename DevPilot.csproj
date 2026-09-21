@@ -4,7 +4,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.6.2" />
+  </ItemGroup>
+
+  <!-- Keep test sources out of the web application's compilation. -->
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <EmbeddedResource Remove="tests/**/*" />
+    <Content Remove="tests/**/*" />
   </ItemGroup>
 </Project>
