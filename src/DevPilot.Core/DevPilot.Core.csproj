@@ -5,10 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageId>DevPilot.Core</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Authors>Azam Shaikh</Authors>
     <Description>Reusable, dependency-free developer productivity utilities from the DevPilot project.</Description>
-    <PackageTags>developer-tools;utilities;dotnet;json;base64;hashing;url-encoding</PackageTags>
+    <PackageTags>developer-tools;utilities;dotnet;json;base64;hashing;url-encoding;url-validation</PackageTags>
     <RepositoryUrl>https://github.com/azam123/DevPilot</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
