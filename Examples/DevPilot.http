@@ -43,3 +43,19 @@ Content-Type: application/json
 {
   "value": "name%3DAzam%20%26%20role%3DPrincipal%20Engineer"
 }
+
+### Validate HTTP URL
+POST {{DevPilot_Host}}/api/validation/url
+Content-Type: application/json
+
+{
+  "value": "https://example.com/products?page=2"
+}
+
+### Invalid URL example
+POST {{DevPilot_Host}}/api/validation/url
+Content-Type: application/json
+
+{
+  "value": "javascript:alert(1)"
+}
